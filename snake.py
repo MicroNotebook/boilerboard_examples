@@ -1,5 +1,6 @@
 import gc
 import random
+import time
 from boilerboard import Boilerboard
 from boilerboard import Buttons
 
@@ -38,22 +39,22 @@ class Snake:
         #turn all pixels on screen off
         self.bb.screen.clear(0)
         #write name of game on screen
-        self.bb.screen.text('BOILER SNAKE', 11,26)
+        self.bb.screen.lcd.text('BOILER SNAKE', 18,26)
         #display screen
-        self.bb.screen.show()
+        self.bb.screen.lcd.show()
         time.sleep(1)
 
         #main loop that runs game
         while True:
-
+            print("location: ", self.snake[0])
             #if game over
             if gameover != 0:
                 #turn all pixels on screen off
                 self.bb.screen.clear(0)
                 #write GAME OVER on screen
-                self.bb.screen.text('GAME OVER', 27,26)
+                self.bb.screen.lcd.text('GAME OVER', 27,26)
                 #display screen
-                self.bb.screen.show()
+                self.bb.screen.lcd.show()
                 time.sleep(1)
                 self.snake = [[16,32],[12,32],[8,32],[4,32]]
                 self.directions = [self.buttons.RIGHT, self.buttons.RIGHT, self.buttons.RIGHT, self.buttons.RIGHT]
@@ -64,9 +65,10 @@ class Snake:
                 #turn all pixels on screen off
                 self.bb.screen.clear(0)
                 #write You win! on screen
-                self.bb.screen.text('You win!', 27, 26)
+                self.bb.screen.lcd.text('You win!', 27, 26)
                 #display screen
-                self.bb.screen.show()
+                self.bb.screen.lcd.show()
+                return
 
             #if snake eats food or food is not present
             if (self.snake[0] == food) or food_not_present:
@@ -79,8 +81,8 @@ class Snake:
 
             #update score and food position
             self.bb.screen.clear(0)
-            self.bb.screen.text('SCORE:', 53, 0)
-            self.bb.screen.text(str(score), 100, 0)
+            self.bb.screen.lcd.text('SCORE:', 37, 0)
+            self.bb.screen.lcd.text(str(score), 84, 0)
             self.displaySolidUnit(food)
 
             #check for button press
@@ -89,13 +91,13 @@ class Snake:
             if button is not None:
                 #if up is pressed and not moving down
                 if   button == self.buttons.UP and self.directions[0] != self.buttons.DOWN:
-                    self.directions[0] = self.bb.Buttons.UP
+                    self.directions[0] = self.buttons.UP
                 #else if down is pressed and not moving up
                 elif button == self.buttons.DOWN  and self.directions[0] != self.buttons.UP:
-                    self.directions[0] = self.bb.Buttons.DOWN
+                    self.directions[0] = self.buttons.DOWN
                 #else if left is pressed and not moving right
                 elif button == self.buttons.LEFT and self.directions[0] != self.buttons.RIGHT:
-                    self.directions[0] = self.bb.Buttons.LEFT
+                    self.directions[0] = self.buttons.LEFT
                 #else if right is pressed and not moving left
                 elif button == self.buttons.RIGHT and self.directions[0] != self.buttons.LEFT:
                     self.directions[0] = self.buttons.RIGHT
@@ -105,7 +107,7 @@ class Snake:
             self.displayHollowUnit(self.snake[1])
             self.displayHollowUnit(self.snake[2])
             self.displayHollowUnit(self.snake[3])
-            self.bb.Screen.show()
+            self.bb.screen.lcd.show()
             #increase gameover
             gameover += self.updateSnake()
             #update direction of snake
@@ -154,15 +156,17 @@ class Snake:
 
     #update direction snake travels
     def updateDirections(self):
-        self.directions[3] = self.directions[2]
-        self.directions[2] = self.directions[1]
-        self.directions[1] = self.directions[0]
+        for i in range(len(self.directions)-1, 0, -1):
+            self.directions[i] = self.directions[i-1]
+        # self.directions[3] = self.directions[2]
+        # self.directions[2] = self.directions[1]
+        # self.directions[1] = self.directions[0]
 
     #display something that can be passed through
     def displayHollowUnit(self, p):
-        self.bb.screen.rect(p[0],p[1],4,4,1)
+        self.bb.screen.lcd.rect(p[0],p[1],4,4,1)
 
     #display something that cannot be passed through
     def displaySolidUnit(self, p):
-        self.bb.screen.rect(p[0],p[1],4,4,1)
-        self.bb.screen.rect(p[0]+1,p[1]+1,2,2,1)
+        self.bb.screen.lcd.rect(p[0],p[1],4,4,1)
+        self.bb.screen.lcd.rect(p[0]+1,p[1]+1,2,2,1)
