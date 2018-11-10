@@ -77,6 +77,17 @@ class Snake:
                 y_food, a0, b0, c0, d0, e0 = random.randomInt(Y_MIN, Y_MAX, a0, b0, c0, d0, e0)
                 food = [int(x_food/4)*4, int(y_food/4)*4]
                 score += 1
+                #adding unit to snake
+                if not food_not_present:
+                    if   self.directions[-1] == self.buttons.UP:
+                        self.snake.append([self.snake[-1][0], self.snake[-1][1]+4])
+                    elif self.directions[-1] == self.buttons.DOWN:
+                        self.snake.append([self.snake[-1][0], self.snake[-1][1]-4])
+                    elif self.directions[-1] == self.buttons.LEFT:
+                        self.snake.append([self.snake[-1][0]+4, self.snake[-1][1]])
+                    elif self.directions[-1] == self.buttons.RIGHT:
+                        self.snake.append([self.snake[-1][0]-4, self.snake[-1][1]])
+                    self.directions.append(self.directions[-1])
                 food_not_present = False
 
             #update score and food position
@@ -85,28 +96,12 @@ class Snake:
             self.bb.screen.lcd.text(str(score), 84, 0)
             self.displaySolidUnit(food)
 
-            #check for button press
-            button = self.bb.irq.get_pressed_button()
-            #if a button is pressed
-            if button is not None:
-                #if up is pressed and not moving down
-                if   button == self.buttons.UP and self.directions[0] != self.buttons.DOWN:
-                    self.directions[0] = self.buttons.UP
-                #else if down is pressed and not moving up
-                elif button == self.buttons.DOWN  and self.directions[0] != self.buttons.UP:
-                    self.directions[0] = self.buttons.DOWN
-                #else if left is pressed and not moving right
-                elif button == self.buttons.LEFT and self.directions[0] != self.buttons.RIGHT:
-                    self.directions[0] = self.buttons.LEFT
-                #else if right is pressed and not moving left
-                elif button == self.buttons.RIGHT and self.directions[0] != self.buttons.LEFT:
-                    self.directions[0] = self.buttons.RIGHT
+            self.checkButtonPress()
 
             #display snake
-            self.displayHollowUnit(self.snake[0])
-            self.displayHollowUnit(self.snake[1])
-            self.displayHollowUnit(self.snake[2])
-            self.displayHollowUnit(self.snake[3])
+            for i in range(0, len(self.snake)):
+                self.displayHollowUnit(self.snake[i])
+
             self.bb.screen.lcd.show()
             #increase gameover
             gameover += self.updateSnake()
@@ -122,10 +117,30 @@ class Snake:
             #garbage collection
             gc.collect()
 
+    def checkButtonPress(self):
+        #check for button press
+        button = self.bb.irq.get_pressed_button()
+        #if a button is pressed
+        if button is not None:
+            #if up is pressed and not moving down
+            if   button == self.buttons.UP    and self.directions[0] != self.buttons.DOWN:
+                self.directions[0] = self.buttons.UP
+            #else if down is pressed and not moving up
+            elif button == self.buttons.DOWN  and self.directions[0] != self.buttons.UP:
+                self.directions[0] = self.buttons.DOWN
+            #else if left is pressed and not moving right
+            elif button == self.buttons.LEFT  and self.directions[0] != self.buttons.RIGHT:
+                self.directions[0] = self.buttons.LEFT
+            #else if right is pressed and not moving left
+            elif button == self.buttons.RIGHT and self.directions[0] != self.buttons.LEFT:
+                self.directions[0] = self.buttons.RIGHT
+
     #update state and condition of snake
     def updateSnake(self):
         p_index = 0
         gameover = 0
+        if self.snake[0] in self.snake[1:]:
+            return 1
         for p in self.snake:
             if self.directions[p_index] == self.buttons.LEFT:
                 if p[0] < X_MIN:
@@ -158,9 +173,6 @@ class Snake:
     def updateDirections(self):
         for i in range(len(self.directions)-1, 0, -1):
             self.directions[i] = self.directions[i-1]
-        # self.directions[3] = self.directions[2]
-        # self.directions[2] = self.directions[1]
-        # self.directions[1] = self.directions[0]
 
     #display something that can be passed through
     def displayHollowUnit(self, p):
